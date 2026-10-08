@@ -137,5 +137,51 @@ def eliminar_cliente(id):
     flash("Cliente eliminado exitosamente.", "success")
     return redirect(url_for('clientes'))
 
+# --- SERVICIOS ---
+@app.route('/servicios')
+def servicios():
+    conn = get_db_connection()
+    servicios = conn.execute('SELECT * FROM servicios').fetchall()
+    conn.close()
+    return render_template('servicios.html', servicios=servicios)
+
+@app.route("/servicio/nuevo", methods=["GET", "POST"])
+def nuevo_servicio():
+    if request.method == "POST":
+        descripcion = request.form["descripcion"]
+        precio = request.form["precio"]
+        conn = get_db_connection()
+        conn.execute("INSERT INTO servicios (descripcion, precio) VALUES (?, ?)", (descripcion, precio))
+        conn.commit()
+        conn.close()
+        flash("Servicio agregado exitosamente.", "success")
+        return redirect(url_for("servicios"))
+    return render_template("form_servicio.html")
+
+@app.route('/servicio/editar/<int:id>', methods=['GET', 'POST'])
+def editar_servicio(id):
+    conn = get_db_connection()
+    servicio = conn.execute('SELECT * FROM servicios WHERE id = ?', (id,)).fetchone()
+    if request.method == 'POST':
+        descripcion = request.form['descripcion']
+        precio = request.form['precio']
+        conn.execute('UPDATE servicios SET descripcion = ?, precio = ? WHERE id = ?', (descripcion, precio, id))
+        conn.commit()
+        conn.close()
+        flash("Servicio actualizado exitosamente.", "success")
+        return redirect(url_for('servicios'))
+    conn.close()
+    return render_template('form_servicio.html', servicio=servicio)
+
+@app.route('/servicio/eliminar/<int:id>')
+def eliminar_servicio(id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM servicios WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    flash("Servicio eliminado exitosamente.", "success")
+    return redirect(url_for('servicios'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
