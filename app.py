@@ -182,6 +182,71 @@ def eliminar_servicio(id):
     flash("Servicio eliminado exitosamente.", "success")
     return redirect(url_for('servicios'))
 
+# --- MANTENIMIENTOS ---
+@app.route('/mantenimientos')
+def mantenimientos():
+    conn = get_db_connection()
+    mantenimientos = conn.execute('''
+        SELECT m.id, m.fecha, c.nombre || ' ' || c.apellidos AS cliente, s.descripcion AS servicio
+        FROM mantenimientos m
+        JOIN clientes c ON m.cliente_id = c.id
+        JOIN servicios s ON m.servicio_id = s.id
+    ''').fetchall()
+    conn.close()
+    return render_template('mantenimientos.html', mantenimientos=mantenimientos)
+
+@app.route("/mantenimiento/nuevo", methods=["GET", "POST"])
+def nuevo_mantenimiento():
+    conn = get_db_connection()
+    if request.method == "POST":
+        fecha = request.form["fecha"]
+        cliente_id = request.form["cliente_id"]
+        servicio_id = request.form["servicio_id"]
+        
+        conn.execute("INSERT INTO mantenimientos (fecha, servicio_id, cliente_id) VALUES (?, ?, ?)", (fecha, servicio_id, cliente_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("mantenimientos"))
+    
+    clientes = conn.execute("SELECT id, nombre || ' ' || apellidos AS nombre FROM clientes").fetchall()
+    servicios = conn.execute("SELECT id, descripcion FROM servicios").fetchall()
+    conn.close()
+    return render_template("form_mantenimiento.html", clientes=clientes, servicios=servicios)
+
+@app.route('/mantenimiento/editar/<int:id>', methods=['GET', 'POST'])
+def editar_mantenimiento(id):
+    conn = get_db_connection()
+    if request.method == 'POST':
+        fecha = request.form['fecha']
+        cliente_id = request.form['cliente_id']
+        servicio_id = request.form['servicio_id']
+        
+        conn.execute('''
+            UPDATE mantenimientos 
+            SET fecha = ?, cliente_id = ?, servicio_id = ? 
+            WHERE id = ?
+        ''', (fecha, cliente_id, servicio_id, id))
+        conn.commit()
+        conn.close()
+        flash("Mantenimiento actualizado exitosamente.", "success")
+        return redirect(url_for('mantenimientos'))
+
+    mantenimiento = conn.execute('SELECT * FROM mantenimientos WHERE id = ?', (id,)).fetchone()
+    clientes = conn.execute("SELECT id, nombre || ' ' || apellidos AS nombre FROM clientes").fetchall()
+    servicios = conn.execute("SELECT id, descripcion FROM servicios").fetchall()
+    conn.close()
+    return render_template('form_mantenimiento.html', mantenimiento=mantenimiento, clientes=clientes, servicios=servicios)
+
+@app.route('/mantenimiento/eliminar/<int:id>')
+def eliminar_mantenimiento(id):
+    conn = get_db_connection()
+    conn.execute("DELETE FROM mantenimientos WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    flash("Mantenimiento eliminado exitosamente.", "success")
+    return redirect(url_for("mantenimientos"))
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

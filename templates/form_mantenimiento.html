@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>
+            {% if mantenimiento %}
+            Editar
+            {% else %}
+            Nuevo
+            {% endif %}
+            Mantenimiento
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="">
+            <div class="mb-3">
+                <label class="form-label">Fecha</label>
+                <input type="date" class="form-control" name="fecha" value="{{ mantenimiento.fecha if mantenimiento else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cliente</label>
+                <select name="cliente_id" class="form-select" required>
+                    <option value="">--- Seleccione un cliente ---</option>
+                    {% for item in clientes %}
+                    <option value="{{ item.id }}" {% if mantenimiento and mantenimiento.cliente_id == item.id %}selected{% endif %}>
+                        {{ item.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Servicio</label>
+                <select name="servicio_id" class="form-select" required>
+                    <option value="">--- Seleccione un servicio ---</option>
+                    {% for item in servicios %}
+                    <option value="{{ item.id }}" {% if mantenimiento and mantenimiento.servicio_id == item.id %}selected{% endif %}>
+                        {{ item.descripcion }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Enviar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
