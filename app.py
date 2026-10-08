@@ -86,6 +86,56 @@ seed_db()
 def index():
     return redirect(url_for('clientes'))
 
+# --- CLIENTES ---
+@app.route('/clientes')
+def clientes():
+    conn = get_db_connection()
+    clientes = conn.execute('SELECT * FROM clientes').fetchall()
+    conn.close()
+    return render_template('clientes.html', clientes=clientes)
+
+@app.route("/cliente/nuevo", methods=["GET", "POST"])
+def nuevo_cliente():
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        apellidos = request.form["apellidos"]
+        telefono = request.form["telefono"]
+        
+        conn = get_db_connection()
+        conn.execute("INSERT INTO clientes (nombre, apellidos, telefono) VALUES (?, ?, ?)", (nombre, apellidos, telefono))
+        conn.commit()
+        conn.close()
+        flash("Cliente registrado exitosamente.", "success")
+        return redirect(url_for("clientes"))
+    return render_template("form_cliente.html")
+
+@app.route('/cliente/editar/<int:id>', methods=['GET', 'POST'])
+def editar_cliente(id):
+    conn = get_db_connection()
+    cliente = conn.execute('SELECT * FROM clientes WHERE id = ?', (id,)).fetchone()
+    
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellidos = request.form['apellidos']
+        telefono = request.form['telefono']
+        
+        conn.execute('UPDATE clientes SET nombre = ?, apellidos = ?, telefono = ? WHERE id = ?', (nombre, apellidos, telefono, id))
+        conn.commit()
+        conn.close()
+        flash("Cliente actualizado exitosamente.", "success")
+        return redirect(url_for('clientes'))
+        
+    conn.close()
+    return render_template('form_cliente.html', cliente=cliente)
+
+@app.route('/cliente/eliminar/<int:id>')
+def eliminar_cliente(id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM clientes WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    flash("Cliente eliminado exitosamente.", "success")
+    return redirect(url_for('clientes'))
 
 if __name__ == '__main__':
     app.run(debug=True)

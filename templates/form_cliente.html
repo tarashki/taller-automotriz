@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>
+            {% if cliente %}
+            Editar
+            {% else %}
+            Nuevo
+            {% endif %}
+            Cliente
+        </h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" name="nombre" value="{{ cliente.nombre if cliente else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Apellidos</label>
+                <input type="text" class="form-control" name="apellidos" value="{{ cliente.apellidos if cliente else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                <input type="text" class="form-control" name="telefono" value="{{ cliente.telefono if cliente else '' }}" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Enviar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
